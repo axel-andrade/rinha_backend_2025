@@ -6,18 +6,17 @@ import (
 	"time"
 
 	"github.com/axel-andrade/rinha_backend_2025/internal/domain"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type PostgresRepository struct {
-	db *pgx.Conn
+type PaymentRepository struct {
+	db *pgxpool.Pool
 }
 
-func NewPostgresRepository(db *pgx.Conn) *PostgresRepository {
-	return &PostgresRepository{db: db}
+func NewPaymentRepository(db *pgxpool.Pool) *PaymentRepository {
+	return &PaymentRepository{db: db}
 }
-
-func (r *PostgresRepository) StorePayment(ctx context.Context, p domain.Payment) error {
+func (r *PaymentRepository) Save(ctx context.Context, p domain.Payment) error {
 	_, err := r.db.Exec(ctx, `
 		INSERT INTO payments (id, amount, processor, requested_at)
 		VALUES ($1, $2, $3, $4)
@@ -29,7 +28,7 @@ func (r *PostgresRepository) StorePayment(ctx context.Context, p domain.Payment)
 	return nil
 }
 
-func (r *PostgresRepository) GetSummary(ctx context.Context, from, to *time.Time) (domain.Summary, error) {
+func (r *PaymentRepository) GetSummary(ctx context.Context, from, to *time.Time) (domain.Summary, error) {
 	query := `
 		SELECT processor, COUNT(*) AS total_requests, COALESCE(SUM(amount), 0) AS total_amount
 		FROM payments

@@ -22,6 +22,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/klauspost/compress v1.18.0 // indirect
-	github.com/nats-io/nats.go v1.43.0
+	github.com/nats-io/nats.go v1.44.0
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 )

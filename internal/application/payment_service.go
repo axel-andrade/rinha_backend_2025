@@ -10,19 +10,19 @@ import (
 
 type PaymentService struct {
 	repository interfaces.PaymentRepository
-	cache      interfaces.PaymentCache
-	queue      interfaces.PaymentQueue
+	// cache      interfaces.PaymentCache
+	queue interfaces.PaymentQueue
 }
 
 func NewPaymentService(
 	repository interfaces.PaymentRepository,
-	cache interfaces.PaymentCache,
+	// cache interfaces.PaymentCache,
 	queue interfaces.PaymentQueue,
 ) *PaymentService {
 	return &PaymentService{
 		repository: repository,
-		cache:      cache,
-		queue:      queue,
+		// cache:      cache,
+		queue: queue,
 	}
 }
 
@@ -34,13 +34,13 @@ func (s *PaymentService) EnqueuePayment(ctx context.Context, correlationId strin
 
 // Salva o pagamento se ainda não existe (idempotente) e opcionalmente armazena no cache
 func (s *PaymentService) SavePayment(ctx context.Context, payment *domain.Payment) error {
-	exists, err := s.repository.Exists(ctx, payment.CorrelationId.String())
-	if err != nil {
-		return err
-	}
-	if exists {
-		return nil // já processado
-	}
+	// exists, err := s.repository.Exists(ctx, payment.CorrelationId.String())
+	// if err != nil {
+	// 	return err
+	// }
+	// if exists {
+	// 	return nil // já processado
+	// }
 
 	if err := s.repository.Save(ctx, *payment); err != nil {
 		return err

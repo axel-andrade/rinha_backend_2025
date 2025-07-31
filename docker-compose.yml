@@ -70,6 +70,8 @@ services:
       POSTGRES_DB: rinha
     volumes:
       - ./sql:/docker-entrypoint-initdb.d
+    ports:
+      - "5433:5432"  # <-- Adicione esta linha
     deploy:
       resources:
         limits:

@@ -11,21 +11,21 @@ import (
 	"github.com/axel-andrade/rinha_backend_2025/internal/domain"
 )
 
-type Client struct {
+type PaymentProcessorClient struct {
 	DefaultURL  string
 	FallbackURL string
 	HTTPClient  *http.Client
 }
 
-func NewClient(defaultURL, fallbackURL string) *Client {
-	return &Client{
+func NewPaymentProcessorClient(defaultURL, fallbackURL string) *PaymentProcessorClient {
+	return &PaymentProcessorClient{
 		DefaultURL:  defaultURL,
 		FallbackURL: fallbackURL,
 		HTTPClient:  &http.Client{Timeout: 2 * time.Second},
 	}
 }
 
-func (c *Client) ProcessPayment(ctx context.Context, payment domain.Payment) (string, error) {
+func (c *PaymentProcessorClient) ProcessPayment(ctx context.Context, payment domain.Payment) (string, error) {
 	if err := c.send(ctx, c.DefaultURL, payment); err == nil {
 		return "default", nil
 	}
@@ -35,7 +35,7 @@ func (c *Client) ProcessPayment(ctx context.Context, payment domain.Payment) (st
 	return "", fmt.Errorf("failed to process payment in both processors")
 }
 
-func (c *Client) send(ctx context.Context, url string, payment domain.Payment) error {
+func (c *PaymentProcessorClient) send(ctx context.Context, url string, payment domain.Payment) error {
 	body := map[string]interface{}{
 		"correlationId": payment.CorrelationId.String(),
 		"amount":        payment.Amount,
