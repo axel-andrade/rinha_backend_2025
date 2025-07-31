@@ -18,7 +18,7 @@ var (
 	natsInst *NatsQueue
 )
 
-// NewNatsQueue cria ou retorna uma instância singleton da conexão NATS.
+// Singleton para reaproveitar conexão NATS
 func NewNatsQueue() *NatsQueue {
 	natsOnce.Do(func() {
 		natsURL := os.Getenv("NATS_URL")
@@ -38,7 +38,14 @@ func NewNatsQueue() *NatsQueue {
 	return natsInst
 }
 
-// Publish publica uma mensagem no tópico informado.
 func (q *NatsQueue) Publish(topic string, data []byte) error {
 	return q.conn.Publish(topic, data)
+}
+
+// Agora com Queue Group (garante que apenas uma instância consuma)
+func (q *NatsQueue) SubscribeQueue(topic, queueGroup string, handler func(data []byte)) error {
+	_, err := q.conn.QueueSubscribe(topic, queueGroup, func(msg *nats.Msg) {
+		handler(msg.Data)
+	})
+	return err
 }

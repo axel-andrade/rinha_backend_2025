@@ -1,7 +1,8 @@
 package main
 
 import (
-	http_adapter "github.com/axel-andrade/rinha_backend_2025/internal/adapters/primary/http"
+	http_server "github.com/axel-andrade/rinha_backend_2025/internal/adapters/primary/http/server"
+	"github.com/axel-andrade/rinha_backend_2025/internal/infra/bootstrap"
 	"github.com/joho/godotenv"
 )
 
@@ -10,6 +11,7 @@ func init() {
 }
 
 func main() {
-	server := http_adapter.NewServer()
+	d := bootstrap.LoadDependencies()
+	server := http_server.NewServer(d)
 	server.Run()
 }

@@ -1,8 +1,10 @@
-package http_adapter
+package http_server
 
 import (
 	"log"
 
+	http_router "github.com/axel-andrade/rinha_backend_2025/internal/adapters/primary/http/router"
+	"github.com/axel-andrade/rinha_backend_2025/internal/infra/bootstrap"
 	"github.com/valyala/fasthttp"
 )
 
@@ -11,10 +13,9 @@ type Server struct {
 }
 
 // NewServer já cria o handler com as rotas configuradas
-func NewServer() *Server {
-	h := NewHandler()
+func NewServer(d *bootstrap.Dependencies) *Server {
 	return &Server{
-		handler: ConfigureRoutes(h),
+		handler: http_router.ConfigureRoutes(d),
 	}
 }
 

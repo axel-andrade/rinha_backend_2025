@@ -1,7 +1,9 @@
 package bootstrap
 
 import (
-	http_adapter "github.com/axel-andrade/rinha_backend_2025/internal/adapters/primary/http"
+	"context"
+
+	http_handler "github.com/axel-andrade/rinha_backend_2025/internal/adapters/primary/http/handler"
 	"github.com/axel-andrade/rinha_backend_2025/internal/adapters/secondary/database/postgres"
 	"github.com/axel-andrade/rinha_backend_2025/internal/adapters/secondary/queue"
 	"github.com/axel-andrade/rinha_backend_2025/internal/application"
@@ -9,27 +11,29 @@ import (
 )
 
 type Dependencies struct {
-	HTTPHandler       http_adapter.Handler
 	PaymentRepository interfaces.PaymentRepository
 	// PaymentCache      application.PaymentCache // Add PaymentCache dependency
 	PaymentService application.PaymentService
 	SummaryService application.SummaryService
 	PaymentQueue   interfaces.PaymentQueue
+	HTTPHandler    http_handler.Handler
 }
 
 func LoadDependencies() *Dependencies {
 	d := &Dependencies{}
 	postgres.ConnectDB()
 	db := postgres.GetDB()
-
 	natsQueue := queue.NewNatsQueue()
+	paymentQueue := queue.NewPaymentQueue(natsQueue)
 
-	d.HTTPHandler = *http_adapter.NewHandler()
 	d.PaymentRepository = postgres.NewPaymentRepository(db)
-	// d.PaymentCache = application.NewPaymentCache() // Initialize PaymentCache
-	d.PaymentQueue = queue.NewPaymentQueue(natsQueue)
+	d.PaymentQueue = paymentQueue
+	pService := *application.NewPaymentService(d.PaymentRepository, d.PaymentQueue)
 
-	d.PaymentService = application.NewPaymentService(d.PaymentRepository, d.PaymentQueue)
+	d.PaymentService = pService
+	paymentQueue.StartConsuming(context.Background(), pService.ProcessPayment)
+
+	d.HTTPHandler = *http_handler.NewHandler(&d.PaymentService)
 
 	return d
 }

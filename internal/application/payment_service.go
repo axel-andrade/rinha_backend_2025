@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/axel-andrade/rinha_backend_2025/internal/domain"
@@ -10,26 +11,22 @@ import (
 
 type PaymentService struct {
 	repository interfaces.PaymentRepository
-	// cache      interfaces.PaymentCache
-	queue interfaces.PaymentQueue
+	queue      interfaces.PaymentQueue
 }
 
 func NewPaymentService(
 	repository interfaces.PaymentRepository,
-	// cache interfaces.PaymentCache,
 	queue interfaces.PaymentQueue,
 ) *PaymentService {
 	return &PaymentService{
 		repository: repository,
-		// cache:      cache,
-		queue: queue,
+		queue:      queue,
 	}
 }
 
 // Enfileira o pagamento com correlationId e valor
-func (s *PaymentService) EnqueuePayment(ctx context.Context, correlationId string, amount float64) error {
-	payment := domain.NewPayment(correlationId, amount)
-	return s.queue.PublishPayment(ctx, payment)
+func (s *PaymentService) EnqueuePayment(ctx context.Context, p *domain.Payment) error {
+	return s.queue.PublishPayment(ctx, p)
 }
 
 // Salva o pagamento se ainda não existe (idempotente) e opcionalmente armazena no cache
@@ -62,5 +59,6 @@ func (s *PaymentService) GetPaymentSummary(ctx context.Context, from, to *time.T
 func (s *PaymentService) ProcessPayment(ctx context.Context, payment *domain.Payment) error {
 	// Lógica futura de validação, persistência ou chamada externa
 	// No momento, você pode apenas fazer um log ou contagem
+	log.Printf("Processing payment: %s, Amount: %.2f", payment.CorrelationId, payment.Amount)
 	return nil
 }

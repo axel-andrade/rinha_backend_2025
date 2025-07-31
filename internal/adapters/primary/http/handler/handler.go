@@ -1,24 +1,24 @@
-package http_adapter
+package http_handler
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"time"
 
+	"github.com/axel-andrade/rinha_backend_2025/internal/application"
 	"github.com/axel-andrade/rinha_backend_2025/internal/domain"
 	"github.com/google/uuid"
 	"github.com/valyala/fasthttp"
 )
 
 type Handler struct {
-	// PaymentSvc *application.PaymentService
-	// SummarySvc *application.SummaryService
+	PaymentService *application.PaymentService
 }
 
-func NewHandler() *Handler {
+func NewHandler(p *application.PaymentService) *Handler {
 	return &Handler{
-		// PaymentSvc: application.NewPaymentService(),
-		// SummarySvc: application.NewSummaryService(),
+		PaymentService: p,
 	}
 }
 
@@ -57,16 +57,16 @@ func (h *Handler) HandlePayments(ctx *fasthttp.RequestCtx) {
 		RequestedAt:   time.Now().UTC(),
 	}
 
+	if err := h.PaymentService.EnqueuePayment(context.Background(), &payment); err != nil {
+		log.Printf("[Handler] Failed to enqueue payment: %v", err)
+		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
+		ctx.SetBodyString("failed to enqueue payment")
+		return
+	}
+
 	log.Printf("[Handler] Payment enqueued: %s", req.CorrelationId)
 	ctx.SetStatusCode(fasthttp.StatusAccepted)
-	ctx.SetContentType("application/json")
-	resp := map[string]string{
-		"status":        "success",
-		"message":       "Payment request accepted",
-		"correlationId": payment.CorrelationId.String(),
-	}
-	respBytes, _ := json.Marshal(resp)
-	ctx.SetBody(respBytes)
+	ctx.SetBodyString("") // 202 sem conteúdo
 }
 
 func (h *Handler) HandleSummary(ctx *fasthttp.RequestCtx) {
