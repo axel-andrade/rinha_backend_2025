@@ -1,4 +1,4 @@
-package http
+package http_adapter
 
 import (
 	"encoding/json"
@@ -15,12 +15,18 @@ type Handler struct {
 	// SummarySvc *application.SummaryService
 }
 
+func NewHandler() *Handler {
+	return &Handler{
+		// PaymentSvc: application.NewPaymentService(),
+		// SummarySvc: application.NewSummaryService(),
+	}
+}
+
 type paymentRequest struct {
 	CorrelationId string  `json:"correlationId"`
 	Amount        float64 `json:"amount"`
 }
 
-// POST /payments
 func (h *Handler) HandlePayments(ctx *fasthttp.RequestCtx) {
 	var req paymentRequest
 	if err := json.Unmarshal(ctx.PostBody(), &req); err != nil {
@@ -51,54 +57,45 @@ func (h *Handler) HandlePayments(ctx *fasthttp.RequestCtx) {
 		RequestedAt:   time.Now().UTC(),
 	}
 
-	data, _ := json.Marshal(payment)
-	err = h.PaymentSvc.RepoImpl.Client.LPush(ctx, "payments:queue", data).Err()
-	if err != nil {
-		log.Printf("[Handler] Failed to enqueue payment: %v", err)
-		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
-		ctx.SetBodyString("failed to enqueue payment")
-		return
-	}
-
 	log.Printf("[Handler] Payment enqueued: %s", req.CorrelationId)
 	ctx.SetStatusCode(fasthttp.StatusAccepted)
 	ctx.SetContentType("application/json")
 	resp := map[string]string{
 		"status":        "success",
 		"message":       "Payment request accepted",
-		"correlationId": req.CorrelationId,
+		"correlationId": payment.CorrelationId.String(),
 	}
 	respBytes, _ := json.Marshal(resp)
 	ctx.SetBody(respBytes)
 }
 
-// GET /payments-summary?from=...&to=...
 func (h *Handler) HandleSummary(ctx *fasthttp.RequestCtx) {
-	fromStr := string(ctx.QueryArgs().Peek("from"))
-	toStr := string(ctx.QueryArgs().Peek("to"))
+	// fromStr := string(ctx.QueryArgs().Peek("from"))
+	// toStr := string(ctx.QueryArgs().Peek("to"))
 
-	var from, to *time.Time
-	if fromStr != "" {
-		if f, err := time.Parse(time.RFC3339, fromStr); err == nil {
-			from = &f
-		}
-	}
-	if toStr != "" {
-		if t, err := time.Parse(time.RFC3339, toStr); err == nil {
-			to = &t
-		}
+	// var from, to *time.Time
+	// if fromStr != "" {
+	// 	if f, err := time.Parse(time.RFC3339, fromStr); err == nil {
+	// 		from = &f
+	// 	}
+	// }
+	// if toStr != "" {
+	// 	if t, err := time.Parse(time.RFC3339, toStr); err == nil {
+	// 		to = &t
+	// 	}
+	// }
+
+	summary := domain.Summary{
+		Default: domain.SummaryItem{
+			TotalRequests: 1000,
+			TotalAmount:   195000.00,
+		},
+		Fallback: domain.SummaryItem{
+			TotalRequests: 100,
+			TotalAmount:   18000.00,
+		},
 	}
 
-	summary, err := h.SummarySvc.GetSummary(from, to)
-	if err != nil {
-		log.Printf("[Handler] Failed to get summary: %v", err)
-		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
-		ctx.SetBodyString("failed to get summary")
-		return
-	}
-
-	ctx.SetStatusCode(fasthttp.StatusOK)
-	ctx.SetContentType("application/json")
 	respBytes, err := json.Marshal(summary)
 	if err != nil {
 		log.Printf("[Handler] Failed to marshal summary: %v", err)
@@ -106,6 +103,9 @@ func (h *Handler) HandleSummary(ctx *fasthttp.RequestCtx) {
 		ctx.SetBodyString("failed to marshal summary")
 		return
 	}
+
+	ctx.SetStatusCode(fasthttp.StatusOK)
+	ctx.SetContentType("application/json")
 	ctx.SetBody(respBytes)
 }
 

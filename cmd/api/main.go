@@ -1,30 +1,17 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/valyala/fasthttp"
+	http_adapter "github.com/axel-andrade/rinha_backend_2025/internal/adapters/primary/http"
+	"github.com/axel-andrade/rinha_backend_2025/internal/adapters/secondary/database"
+	"github.com/joho/godotenv"
 )
 
-func main() {
-	handler := func(ctx *fasthttp.RequestCtx) {
-		switch string(ctx.Path()) {
-		case "/":
-			ctx.SetStatusCode(fasthttp.StatusOK)
-			ctx.SetBodyString("ok")
-		case "/health":
-			ctx.SetStatusCode(fasthttp.StatusOK)
-			ctx.SetBodyString(`{"status":"ok"}`)
-			ctx.SetContentType("application/json")
-		default:
-			ctx.SetStatusCode(fasthttp.StatusNotFound)
-			ctx.SetBodyString("not found")
-		}
-	}
+func init() {
+	godotenv.Load()
+	database.ConnectDB()
+}
 
-	fmt.Println("🚀 Servidor rodando em http://localhost:9999")
-	err := fasthttp.ListenAndServe(":9999", handler)
-	if err != nil {
-		panic(err)
-	}
+func main() {
+	server := http_adapter.NewServer()
+	server.Run()
 }
