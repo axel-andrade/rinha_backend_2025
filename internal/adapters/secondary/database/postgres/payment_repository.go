@@ -1,11 +1,11 @@
-package database
+package postgres
 
 import (
 	"context"
 	"fmt"
 	"time"
 
-	"github.com/axel-andrade/rinha_backend_2025/internal/core/domain"
+	"github.com/axel-andrade/rinha_backend_2025/internal/domain"
 	"github.com/jackc/pgx/v5"
 )
 

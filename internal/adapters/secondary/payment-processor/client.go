@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/axel-andrade/rinha_backend_2025/internal/core/domain"
+	"github.com/axel-andrade/rinha_backend_2025/internal/domain"
 )
 
 type Client struct {

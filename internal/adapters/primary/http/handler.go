@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/axel-andrade/rinha_backend_2025/internal/core/domain"
+	"github.com/axel-andrade/rinha_backend_2025/internal/domain"
 	"github.com/google/uuid"
 	"github.com/valyala/fasthttp"
 )

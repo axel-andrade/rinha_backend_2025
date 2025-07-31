@@ -19,3 +19,12 @@ type Payment struct {
 	RequestedAt   time.Time            `json:"requestedAt"`
 	Processor     PaymentProcessorType `json:"processor"`
 }
+
+func NewPayment(correlationId string, amount float64) *Payment {
+	return &Payment{
+		CorrelationId: uuid.MustParse(correlationId),
+		Amount:        amount,
+		RequestedAt:   time.Now().UTC(),
+		Processor:     ProcessorDefault,
+	}
+}
