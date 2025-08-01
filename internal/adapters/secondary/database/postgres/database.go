@@ -40,7 +40,6 @@ func ConnectDB() error {
 		return fmt.Errorf("unable to parse DSN: %w", err)
 	}
 
-	// Ajustes para a Rinha (consumo controlado)
 	config.MaxConns = 10
 	config.MinConns = 2
 	config.MaxConnLifetime = time.Hour

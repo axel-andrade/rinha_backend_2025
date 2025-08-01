@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/axel-andrade/rinha_backend_2025/internal/domain"
+	"github.com/axel-andrade/go_rinha_backend_2025/internal/domain"
 )
 
 type PaymentQueue struct {
@@ -33,9 +33,8 @@ func (pq *PaymentQueue) StartConsuming(ctx context.Context, handler func(context
 	return pq.natsQueue.SubscribeQueue(pq.topic, pq.queueGroup, func(data []byte) {
 		var payment domain.Payment
 		if err := json.Unmarshal(data, &payment); err != nil {
-			// logar erro
 			return
 		}
-		_ = handler(ctx, &payment) // ignorar erro ou logar
+		_ = handler(ctx, &payment)
 	})
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/axel-andrade/rinha_backend_2025/internal/domain"
+	"github.com/axel-andrade/go_rinha_backend_2025/internal/domain"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -28,6 +28,20 @@ func (r *PaymentRepository) Save(ctx context.Context, p domain.Payment) error {
 	return nil
 }
 
+func (r *PaymentRepository) Exists(ctx context.Context, correlationId string) (bool, error) {
+	query := `
+		SELECT EXISTS (
+			SELECT 1 FROM payments WHERE id = $1
+		)
+	`
+	var exists bool
+	err := r.db.QueryRow(ctx, query, correlationId).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("failed to check payment existence: %w", err)
+	}
+	return exists, nil
+}
+
 func (r *PaymentRepository) GetSummary(ctx context.Context, from, to *time.Time) (domain.Summary, error) {
 	query := `
 		SELECT processor, COUNT(*) AS total_requests, COALESCE(SUM(amount), 0) AS total_amount
@@ -43,7 +57,6 @@ func (r *PaymentRepository) GetSummary(ctx context.Context, from, to *time.Time)
 	}
 	defer rows.Close()
 
-	// inicializa com zeros
 	var summary domain.Summary
 
 	for rows.Next() {

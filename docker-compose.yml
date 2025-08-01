@@ -1,50 +1,6 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  app1:
-    build: .
-    container_name: backend-1
-    environment:
-      - DB_HOST=db
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=rinha
-      - NATS_URL=nats://nats:4222  # <-- nova variável
-    ports:
-      - "9001:9999"
-    deploy:
-      resources:
-        limits:
-          cpus: "0.65"
-          memory: "150MB"
-    depends_on:
-      - db
-      - nats  # <-- depende do NATS
-    networks:
-      - rinha-net
-
-  app2:
-    build: .
-    container_name: backend-2
-    environment:
-      - DB_HOST=db
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=rinha
-      - NATS_URL=nats://nats:4222  # <-- nova variável
-    ports:
-      - "9002:9999"
-    deploy:
-      resources:
-        limits:
-          cpus: "0.65"
-          memory: "150MB"
-    depends_on:
-      - db
-      - nats
-    networks:
-      - rinha-net
-
   nginx:
     image: nginx:alpine
     container_name: nginx-lb
@@ -62,6 +18,60 @@ services:
           memory: "30MB"
     networks:
       - rinha-net
+
+  app1:
+    build: .
+    container_name: app1
+    hostname: app1
+    expose:
+      - "8080"
+    networks:
+      - rinha-net
+      - payment-processor
+    environment:
+      - LISTEN_ADDR=:8080
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=rinha
+      - PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
+      - PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      - db
+      - nats
+    deploy:
+      resources:
+        limits:
+          cpus: "0.65"
+          memory: "80MB"
+
+  app2:
+    build: .
+    container_name: app2
+    hostname: app2
+    expose:
+      - "8080"
+    networks:
+      - rinha-net
+      - payment-processor
+    environment:
+      - LISTEN_ADDR=:8080
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=rinha
+      - PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
+      - PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      - db
+      - nats
+    deploy:
+      resources:
+        limits:
+          cpus: "0.65"
+          memory: "80MB"
 
   db:
     image: postgres:16
@@ -87,7 +97,7 @@ services:
     container_name: nats
     ports:
       - "4222:4222"
-      - "8222:8222" # Porta para monitoramento (opcional)
+      - "8222:8222"
     deploy:
       resources:
         limits:
@@ -99,3 +109,6 @@ services:
 networks:
   rinha-net:
     driver: bridge
+
+  payment-processor:
+    external: true

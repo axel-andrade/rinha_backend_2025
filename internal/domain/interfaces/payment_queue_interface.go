@@ -3,7 +3,7 @@ package interfaces
 import (
 	"context"
 
-	"github.com/axel-andrade/rinha_backend_2025/internal/domain"
+	"github.com/axel-andrade/go_rinha_backend_2025/internal/domain"
 )
 
 type PaymentQueue interface {

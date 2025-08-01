@@ -3,8 +3,8 @@ package application
 import (
 	"time"
 
-	"github.com/axel-andrade/rinha_backend_2025/internal/domain"
-	"github.com/axel-andrade/rinha_backend_2025/internal/domain/interfaces"
+	"github.com/axel-andrade/go_rinha_backend_2025/internal/domain"
+	"github.com/axel-andrade/go_rinha_backend_2025/internal/domain/interfaces"
 )
 
 type SummaryService struct {

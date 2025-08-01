@@ -1,4 +1,4 @@
-module github.com/axel-andrade/rinha_backend_2025
+module github.com/axel-andrade/go_rinha_backend_2025
 
 go 1.24
 

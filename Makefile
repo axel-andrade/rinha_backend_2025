@@ -30,7 +30,7 @@ ps:
 	docker-compose ps
 
 login: down
-	docker-compose run -w /application rinha_backend_2025 /bin/bash
+	docker-compose run -w /application go_rinha_backend_2025 /bin/bash
 
 migrate:
-	docker-compose run -w /application rinha_backend_2025 flyway -configFiles=/application/flyway.conf baseline
+	docker-compose run -w /application go_rinha_backend_2025 flyway -configFiles=/application/flyway.conf baseline

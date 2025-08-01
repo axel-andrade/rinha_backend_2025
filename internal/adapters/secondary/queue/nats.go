@@ -8,7 +8,6 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// NatsQueue representa uma conexão genérica ao NATS.
 type NatsQueue struct {
 	conn *nats.Conn
 }
@@ -18,7 +17,6 @@ var (
 	natsInst *NatsQueue
 )
 
-// Singleton para reaproveitar conexão NATS
 func NewNatsQueue() *NatsQueue {
 	natsOnce.Do(func() {
 		natsURL := os.Getenv("NATS_URL")
@@ -42,7 +40,6 @@ func (q *NatsQueue) Publish(topic string, data []byte) error {
 	return q.conn.Publish(topic, data)
 }
 
-// Agora com Queue Group (garante que apenas uma instância consuma)
 func (q *NatsQueue) SubscribeQueue(topic, queueGroup string, handler func(data []byte)) error {
 	_, err := q.conn.QueueSubscribe(topic, queueGroup, func(msg *nats.Msg) {
 		handler(msg.Data)

@@ -1,8 +1,8 @@
 package main
 
 import (
-	http_server "github.com/axel-andrade/rinha_backend_2025/internal/adapters/primary/http/server"
-	"github.com/axel-andrade/rinha_backend_2025/internal/infra/bootstrap"
+	http_server "github.com/axel-andrade/go_rinha_backend_2025/internal/adapters/primary/http/server"
+	"github.com/axel-andrade/go_rinha_backend_2025/internal/infra/bootstrap"
 	"github.com/joho/godotenv"
 )
 

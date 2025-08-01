@@ -1,7 +1,7 @@
 package http_router
 
 import (
-	"github.com/axel-andrade/rinha_backend_2025/internal/infra/bootstrap"
+	"github.com/axel-andrade/go_rinha_backend_2025/internal/infra/bootstrap"
 	"github.com/valyala/fasthttp"
 )
 
