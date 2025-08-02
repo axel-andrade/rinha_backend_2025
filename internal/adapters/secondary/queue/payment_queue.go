@@ -38,3 +38,20 @@ func (pq *PaymentQueue) StartConsuming(ctx context.Context, handler func(context
 		_ = handler(ctx, &payment)
 	})
 }
+
+func (pq *PaymentQueue) StartConsumingWithWorkers(
+	ctx context.Context,
+	workerCount int,
+	handler func(context.Context, *domain.Payment) error,
+) error {
+	return pq.natsQueue.SubscribeQueueWithWorkers(pq.topic, pq.queueGroup, func(data []byte) {
+		var payment domain.Payment
+		if err := json.Unmarshal(data, &payment); err != nil {
+			return
+		}
+
+		// Chama handler com contexto
+		if err := handler(ctx, &payment); err != nil {
+		}
+	}, workerCount)
+}

@@ -40,8 +40,8 @@ func ConnectDB() error {
 		return fmt.Errorf("unable to parse DSN: %w", err)
 	}
 
-	config.MaxConns = 10
-	config.MinConns = 2
+	config.MaxConns = 20
+	config.MinConns = 4
 	config.MaxConnLifetime = time.Hour
 	config.MaxConnIdleTime = 15 * time.Minute
 	config.HealthCheckPeriod = 5 * time.Minute

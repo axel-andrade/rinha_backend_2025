@@ -46,3 +46,23 @@ func (q *NatsQueue) SubscribeQueue(topic, queueGroup string, handler func(data [
 	})
 	return err
 }
+
+func (q *NatsQueue) SubscribeQueueWithWorkers(topic, queueGroup string, handler func(data []byte), concurrency int) error {
+	msgChan := make(chan []byte, 100) // buffer de mensagens
+
+	// inicia os workers
+	for i := 0; i < concurrency; i++ {
+		go func() {
+			for data := range msgChan {
+				handler(data)
+			}
+		}()
+	}
+
+	// NATS assina e envia para o canal
+	_, err := q.conn.QueueSubscribe(topic, queueGroup, func(msg *nats.Msg) {
+		msgChan <- msg.Data
+	})
+
+	return err
+}

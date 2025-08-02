@@ -14,8 +14,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.2"
-          memory: "30MB"
+          cpus: "0.25"
+          memory: "32MB"
     networks:
       - rinha-net
 
@@ -43,8 +43,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.65"
-          memory: "80MB"
+          cpus: "0.6"
+          memory: "96MB"
 
   app2:
     build: .
@@ -70,8 +70,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.65"
-          memory: "80MB"
+          cpus: "0.6"
+          memory: "96MB"
 
   db:
     image: postgres:16
@@ -87,8 +87,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.1"
-          memory: "40MB"
+          cpus: "0.15"
+          memory: "64MB"
     networks:
       - rinha-net
 

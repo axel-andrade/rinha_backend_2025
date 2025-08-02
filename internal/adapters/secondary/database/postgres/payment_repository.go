@@ -16,6 +16,7 @@ type PaymentRepository struct {
 func NewPaymentRepository(db *pgxpool.Pool) *PaymentRepository {
 	return &PaymentRepository{db: db}
 }
+
 func (r *PaymentRepository) Save(ctx context.Context, p domain.Payment) error {
 	_, err := r.db.Exec(ctx, `
 		INSERT INTO payments (id, amount, processor, requested_at)
@@ -28,28 +29,14 @@ func (r *PaymentRepository) Save(ctx context.Context, p domain.Payment) error {
 	return nil
 }
 
-func (r *PaymentRepository) Exists(ctx context.Context, correlationId string) (bool, error) {
-	query := `
-		SELECT EXISTS (
-			SELECT 1 FROM payments WHERE id = $1
-		)
-	`
-	var exists bool
-	err := r.db.QueryRow(ctx, query, correlationId).Scan(&exists)
-	if err != nil {
-		return false, fmt.Errorf("failed to check payment existence: %w", err)
-	}
-	return exists, nil
-}
-
 func (r *PaymentRepository) GetSummary(ctx context.Context, from, to *time.Time) (domain.Summary, error) {
 	query := `
-		SELECT processor, COUNT(*) AS total_requests, COALESCE(SUM(amount), 0) AS total_amount
-		FROM payments
-		WHERE ($1 IS NULL OR requested_at >= $1)
-		  AND ($2 IS NULL OR requested_at <= $2)
-		GROUP BY processor
-	`
+	SELECT processor, COUNT(*) AS total_requests, COALESCE(SUM(amount), 0) AS total_amount
+	FROM payments
+	WHERE ($1::timestamp IS NULL OR requested_at >= $1::timestamp)
+	  AND ($2::timestamp IS NULL OR requested_at <= $2::timestamp)
+	GROUP BY processor
+    `
 
 	rows, err := r.db.Query(ctx, query, from, to)
 	if err != nil {
@@ -75,8 +62,6 @@ func (r *PaymentRepository) GetSummary(ctx context.Context, from, to *time.Time)
 		case string(domain.ProcessorFallback):
 			summary.Fallback.TotalRequests = count
 			summary.Fallback.TotalAmount = amount
-		default:
-			// opcional: logar processadores inesperados
 		}
 	}
 

@@ -32,16 +32,6 @@ func (s *PaymentService) EnqueuePayment(ctx context.Context, p *domain.Payment) 
 }
 
 func (s *PaymentService) SavePayment(ctx context.Context, payment *domain.Payment) error {
-	exists, err := s.repository.Exists(ctx, payment.CorrelationId.String())
-
-	if err != nil {
-		return err
-	}
-
-	if exists {
-		return nil
-	}
-
 	if err := s.repository.Save(ctx, *payment); err != nil {
 		return err
 	}
@@ -54,25 +44,21 @@ func (s *PaymentService) GetPaymentSummary(ctx context.Context, from, to *time.T
 }
 
 func (s *PaymentService) ProcessPayment(ctx context.Context, payment *domain.Payment) error {
-	log.Printf("Processing payment: %s, Amount: %.2f", payment.CorrelationId, payment.Amount)
-
 	processor, err := s.processor.ProcessPayment(ctx, *payment)
-	if err != nil {
-		log.Printf("Error processing payment %s: %v", payment.CorrelationId, err)
-		// if enqueueErr := s.queue.PublishPayment(ctx, payment); enqueueErr != nil {
-		// 	log.Printf("Failed to re-enqueue payment %s: %v", payment.CorrelationId, enqueueErr)
-		// } else {
-		// 	log.Printf("Payment %s re-enqueued for retry", payment.CorrelationId)
-		// }
-		return err
+	if err != nil && processor == "" {
+		if enqueueErr := s.queue.PublishPayment(ctx, payment); enqueueErr != nil {
+		} else {
+		}
+
+		return nil
 	}
 
-	log.Printf("Payment %s processed successfully", processor)
+	if processor != "" {
+		payment.Processor = processor
 
-	payment.Processor = processor
-
-	if saveErr := s.SavePayment(ctx, payment); saveErr != nil {
-		log.Printf("Failed to save payment %s: %v", payment.CorrelationId, saveErr)
+		if saveErr := s.SavePayment(ctx, payment); saveErr != nil {
+			log.Printf("Failed to save payment %s: %v", payment.CorrelationId, saveErr)
+		}
 	}
 
 	return nil
