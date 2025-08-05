@@ -30,13 +30,17 @@ func (r *PaymentRepository) Save(ctx context.Context, p domain.Payment) error {
 }
 
 func (r *PaymentRepository) GetSummary(ctx context.Context, from, to *time.Time) (domain.Summary, error) {
+	// Query otimizada com índices
 	query := `
-	SELECT processor, COUNT(*) AS total_requests, COALESCE(SUM(amount), 0) AS total_amount
-	FROM payments
-	WHERE ($1::timestamp IS NULL OR requested_at >= $1::timestamp)
-	  AND ($2::timestamp IS NULL OR requested_at <= $2::timestamp)
-	GROUP BY processor
-    `
+		SELECT 
+			processor,
+			COUNT(*) AS total_requests,
+			COALESCE(SUM(amount), 0) AS total_amount
+		FROM payments
+		WHERE ($1::timestamp IS NULL OR requested_at >= $1::timestamp)
+		  AND ($2::timestamp IS NULL OR requested_at <= $2::timestamp)
+		GROUP BY processor
+	`
 
 	rows, err := r.db.Query(ctx, query, from, to)
 	if err != nil {

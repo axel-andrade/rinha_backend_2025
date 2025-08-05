@@ -1,3 +1,122 @@
+# version: '3.8'
+
+# services:
+#   nginx:
+#     image: nginx:alpine
+#     container_name: nginx-lb
+#     volumes:
+#       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+#     ports:
+#       - "9999:9999"
+#     depends_on:
+#       - app1
+#       - app2
+#     deploy:
+#       resources:
+#         limits:
+#           cpus: "0.1"
+#           memory: "32MB"
+#     networks:
+#       - rinha-net
+
+#   app1:
+#     build: .
+#     container_name: app1
+#     hostname: app1
+#     expose:
+#       - "9999"
+#     networks:
+#       - rinha-net
+#       - payment-processor
+#     environment:
+#       - LISTEN_ADDR=:9999
+#       - DB_HOST=db
+#       - DB_USER=postgres
+#       - DB_PASSWORD=postgres
+#       - DB_NAME=rinha
+#       - PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
+#       - PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
+#       - NATS_URL=nats://nats:4222
+#     depends_on:
+#       - db
+#       - nats
+#     deploy:
+#       resources:
+#         limits:
+#           cpus: "0.4"
+#           memory: "128MB"
+
+#   app2:
+#     build: .
+#     container_name: app2
+#     hostname: app2
+#     expose:
+#       - "9999"
+#     networks:
+#       - rinha-net
+#       - payment-processor
+#     environment:
+#       - LISTEN_ADDR=:9999
+#       - DB_HOST=db
+#       - DB_USER=postgres
+#       - DB_PASSWORD=postgres
+#       - DB_NAME=rinha
+#       - PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
+#       - PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
+#       - NATS_URL=nats://nats:4222
+#     depends_on:
+#       - db
+#       - nats
+#     deploy:
+#       resources:
+#         limits:
+#           cpus: "0.4"
+#           memory: "128MB"
+
+#   db:
+#     image: postgres:16
+#     container_name: postgres-db
+#     environment:
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: postgres
+#       POSTGRES_DB: rinha
+#       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+#     volumes:
+#       - ./sql:/docker-entrypoint-initdb.d
+#       - ./sql/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+#     ports:
+#       - "5433:5432"
+#     command: >
+#       postgres -c config_file=/etc/postgresql/postgresql.conf
+#     deploy:
+#       resources:
+#         limits:
+#           cpus: "0.4"
+#           memory: "48MB"
+#     networks:
+#       - rinha-net
+
+#   nats:
+#     image: nats:2.10
+#     container_name: nats
+#     ports:
+#       - "4222:4222"
+#       - "8222:8222"
+#     deploy:
+#       resources:
+#         limits:
+#           cpus: "0.1"
+#           memory: "14MB"
+#     networks:
+#       - rinha-net
+
+# networks:
+#   rinha-net:
+#     driver: bridge
+
+#   payment-processor:
+#     external: true
+
 version: '3.8'
 
 services:
@@ -80,10 +199,22 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: rinha
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     volumes:
       - ./sql:/docker-entrypoint-initdb.d
+      - ./sql/postgresql.conf:/etc/postgresql/postgresql.conf:ro
     ports:
       - "5433:5432"
+    command: >
+      postgres -c config_file=/etc/postgresql/postgresql.conf
+# Uncomment the following lines if you want to use a custom PostgreSQL configuration file
+#     volumes:
+#       - ./sql:/docker-entrypoint-initdb.d
+#       - ./sql/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+#     ports:
+#       - "5433:5432"
+#     command: >
+#       postgres -c config_file=/etc/postgresql/postgresql.conf
     deploy:
       resources:
         limits:
