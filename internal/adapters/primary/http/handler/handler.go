@@ -3,6 +3,7 @@ package http_handler
 import (
 	"context"
 	"encoding/json"
+	"sync"
 	"time"
 
 	"github.com/axel-andrade/go_rinha_backend_2025/internal/application"
@@ -13,11 +14,17 @@ import (
 
 type Handler struct {
 	PaymentService *application.PaymentService
+	paymentPool    sync.Pool
 }
 
 func NewHandler(p *application.PaymentService) *Handler {
 	return &Handler{
 		PaymentService: p,
+		paymentPool: sync.Pool{
+			New: func() interface{} {
+				return &paymentRequest{}
+			},
+		},
 	}
 }
 
@@ -27,8 +34,13 @@ type paymentRequest struct {
 }
 
 func (h *Handler) HandlePayments(ctx *fasthttp.RequestCtx) {
-	var req paymentRequest
-	if err := json.Unmarshal(ctx.PostBody(), &req); err != nil {
+	req := h.paymentPool.Get().(*paymentRequest)
+	defer h.paymentPool.Put(req)
+
+	req.CorrelationId = ""
+	req.Amount = 0
+
+	if err := json.Unmarshal(ctx.PostBody(), req); err != nil {
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
 		ctx.SetBodyString("invalid body")
 		return
@@ -60,7 +72,7 @@ func (h *Handler) HandlePayments(ctx *fasthttp.RequestCtx) {
 	}
 
 	ctx.SetStatusCode(fasthttp.StatusAccepted)
-	ctx.SetBodyString("") // 202 sem conteúdo
+	ctx.SetBodyString("")
 }
 
 func (h *Handler) HandleSummary(ctx *fasthttp.RequestCtx) {

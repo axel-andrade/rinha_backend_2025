@@ -15,7 +15,7 @@ services:
       resources:
         limits:
           cpus: "0.25"
-          memory: "32MB"
+          memory: "24MB"
     networks:
       - rinha-net
 
@@ -44,7 +44,7 @@ services:
       resources:
         limits:
           cpus: "0.6"
-          memory: "96MB"
+          memory: "100MB"
 
   app2:
     build: .
@@ -71,7 +71,7 @@ services:
       resources:
         limits:
           cpus: "0.6"
-          memory: "96MB"
+          memory: "100MB"
 
   db:
     image: postgres:16
@@ -80,15 +80,19 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: rinha
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     volumes:
       - ./sql:/docker-entrypoint-initdb.d
+      - ./sql/postgresql.conf:/etc/postgresql/postgresql.conf:ro
     ports:
       - "5433:5432"
+    command: >
+      postgres -c config_file=/etc/postgresql/postgresql.conf
     deploy:
       resources:
         limits:
           cpus: "0.15"
-          memory: "64MB"
+          memory: "80MB"
     networks:
       - rinha-net
 

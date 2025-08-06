@@ -17,7 +17,7 @@ func NewPaymentQueue(natsQueue *NatsQueue) *PaymentQueue {
 	return &PaymentQueue{
 		natsQueue:  natsQueue,
 		topic:      "payments",
-		queueGroup: "payment-workers", // nome fixo para agrupar consumidores
+		queueGroup: "payment-workers",
 	}
 }
 
@@ -50,7 +50,6 @@ func (pq *PaymentQueue) StartConsumingWithWorkers(
 			return
 		}
 
-		// Chama handler com contexto
 		if err := handler(ctx, &payment); err != nil {
 		}
 	}, workerCount)

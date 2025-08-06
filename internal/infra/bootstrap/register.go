@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+	"runtime"
 
 	http_handler "github.com/axel-andrade/go_rinha_backend_2025/internal/adapters/primary/http/handler"
 	"github.com/axel-andrade/go_rinha_backend_2025/internal/adapters/secondary/database/postgres"
@@ -14,7 +15,6 @@ import (
 type Dependencies struct {
 	PaymentRepository interfaces.PaymentRepository
 	PaymentService    application.PaymentService
-	SummaryService    application.SummaryService
 	PaymentQueue      interfaces.PaymentQueue
 	PaymentProcessor  interfaces.PaymentProcessor
 	HTTPHandler       http_handler.Handler
@@ -36,8 +36,8 @@ func LoadDependencies() *Dependencies {
 
 	d.PaymentService = pService
 
-	//paymentQueue.StartConsuming(context.Background(), pService.ProcessPayment)
-	paymentQueue.StartConsumingWithWorkers(context.Background(), 8, pService.ProcessPayment)
+	workerCount := runtime.NumCPU() * 4
+	paymentQueue.StartConsumingWithWorkers(context.Background(), workerCount, pService.ProcessPayment)
 
 	d.HTTPHandler = *http_handler.NewHandler(&d.PaymentService)
 
